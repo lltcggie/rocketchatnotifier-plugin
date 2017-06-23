@@ -54,14 +54,16 @@ public class MessageBuilder {
 
   @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
   String getStatusMessage() {
-    if (this.build.isBuilding()) {
-      if (this.finished) {
-        return END_STATUS_MESSAGE;
-      } else {
+	if (!this.finished) {
         return STARTING_STATUS_MESSAGE;
-      }
     }
     Result result = this.build.getResult();
+	while(result == null) {
+		result = this.build.getResult();
+		try {
+            Thread.sleep(10);
+		} catch(InterruptedException e){}
+	}
     Result previousResult;
     Run previousBuild = this.build.getProject().getLastBuild().getPreviousBuild();
     Run previousSuccessfulBuild = this.build.getPreviousSuccessfulBuild();
