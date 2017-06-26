@@ -112,7 +112,8 @@ public class RocketChatClientImpl implements RocketChatClient {
     throws ValidatorException, IOException {
     Map body = new HashMap<String, String>();
     body.put("channel", "#" + channelName);
-    body.put("text", message);
+	if (message != null)
+		body.put("text", message);
     if (this.getInfo().getVersion().compareTo("0.50.1") >= 0) {
       if (emoji != null)
         body.put("emoji", emoji);

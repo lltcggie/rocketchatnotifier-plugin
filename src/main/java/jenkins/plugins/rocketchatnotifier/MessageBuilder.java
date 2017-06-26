@@ -33,11 +33,24 @@ public class MessageBuilder {
     NOT_BUILT_STATUS_MESSAGE = "Not built",
     UNSTABLE_STATUS_MESSAGE = "Unstable",
     UNKNOWN_STATUS_MESSAGE = "Unknown";
+	
+  public static final String STARTING_STATUS_COLOR = null,
+    END_STATUS_COLOR = null,
+    BACK_TO_NORMAL_STATUS_COLOR = "#00ff00",
+    STILL_FAILING_STATUS_COLOR = "#ff0000",
+    SUCCESS_STATUS_COLOR = "#00ff00",
+    FAILURE_STATUS_COLOR = "#ff0000",
+    ABORTED_STATUS_COLOR = "#ff0000",
+    NOT_BUILT_STATUS_COLOR = null,
+    UNSTABLE_STATUS_COLOR = null,
+    UNKNOWN_STATUS_COLOR = null;
 
   private StringBuffer message;
   private RocketChatNotifier notifier;
   private AbstractBuild build;
   private boolean finished = false;
+  
+  private String buildColor = null;
 
   MessageBuilder(RocketChatNotifier notifier, AbstractBuild build, boolean finished) {
     this.notifier = notifier;
@@ -55,6 +68,7 @@ public class MessageBuilder {
   @SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
   String getStatusMessage() {
 	if (!this.finished) {
+		buildColor = STARTING_STATUS_COLOR;
         return STARTING_STATUS_MESSAGE;
     }
     Result result = this.build.getResult();
@@ -97,26 +111,34 @@ public class MessageBuilder {
     if (result == Result.SUCCESS
       && (previousResult == Result.FAILURE || previousResult == Result.UNSTABLE)
       && buildHasSucceededBefore) {
+	  buildColor = BACK_TO_NORMAL_STATUS_COLOR;
       return BACK_TO_NORMAL_STATUS_MESSAGE;
     }
     if (result == Result.FAILURE && previousResult == Result.FAILURE) {
+	  buildColor = STILL_FAILING_STATUS_COLOR;
       return STILL_FAILING_STATUS_MESSAGE;
     }
     if (result == Result.SUCCESS) {
+	  buildColor = SUCCESS_STATUS_COLOR;
       return SUCCESS_STATUS_MESSAGE;
     }
     if (result == Result.FAILURE) {
+	  buildColor = FAILURE_STATUS_COLOR;
       return FAILURE_STATUS_MESSAGE;
     }
     if (result == Result.ABORTED) {
+	  buildColor = ABORTED_STATUS_COLOR;
       return ABORTED_STATUS_MESSAGE;
     }
     if (result == Result.NOT_BUILT) {
+	  buildColor = NOT_BUILT_STATUS_COLOR;
       return NOT_BUILT_STATUS_MESSAGE;
     }
     if (result == Result.UNSTABLE) {
+	  buildColor = UNSTABLE_STATUS_COLOR;
       return UNSTABLE_STATUS_MESSAGE;
     }
+	buildColor = UNKNOWN_STATUS_COLOR;
     return UNKNOWN_STATUS_MESSAGE;
   }
 
@@ -211,5 +233,9 @@ public class MessageBuilder {
 
   public String toString() {
     return message.toString();
+  }
+  
+  public String getBuildColor() {
+    return buildColor;
   }
 }

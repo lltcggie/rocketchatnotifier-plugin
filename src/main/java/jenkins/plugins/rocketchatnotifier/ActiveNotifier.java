@@ -8,7 +8,10 @@ import hudson.scm.ChangeLogSet.Entry;
 import hudson.triggers.SCMTrigger;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -96,8 +99,25 @@ public class ActiveNotifier implements FineGrainedNotifier {
             && notifier.getNotifyBackToNormal())
             || (result == Result.SUCCESS && notifier.getNotifySuccess())
             || (result == Result.UNSTABLE && notifier.getNotifyUnstable())) {
-            getRocket(r).publish(getBuildStatusMessage(r, notifier.includeTestSummary(),
-              notifier.includeCustomMessage(), true));//, getBuildColor(r));
+			MessageBuilder msg = getBuildStatusMessageObject(r, notifier.includeTestSummary(),
+              notifier.includeCustomMessage(), true);
+			String buildColor = msg.getBuildColor();
+
+			List<Map<String, Object>> attachments = null;
+			if (buildColor != null) {
+				attachments = new ArrayList<Map<String, Object>>();
+
+				Map<String, Object> body = new HashMap<String, Object>();
+				body.put("color", buildColor);
+				body.put("text", msg.toString());
+
+				attachments.add(body);
+				getRocket(r).publish(null, null, null, attachments);
+			}
+			else {
+				getRocket(r).publish(msg.toString());
+			}
+
             if (notifier.getCommitInfoChoice().showAnything()) {
               getRocket(r).publish(getCommitList(r));//, getBuildColor(r));
             }
@@ -194,6 +214,20 @@ public class ActiveNotifier implements FineGrainedNotifier {
       message.appendCustomMessage();
     }
     return message.toString();
+  }
+  
+  MessageBuilder getBuildStatusMessageObject(AbstractBuild r, boolean includeTestSummary, boolean includeCustomMessage, boolean finished) {
+    MessageBuilder message = new MessageBuilder(notifier, r, finished);
+    message.appendStatusMessage();
+    message.appendDuration();
+    message.appendOpenLink();
+    if (includeTestSummary) {
+      message.appendTestSummary();
+    }
+    if (includeCustomMessage) {
+      message.appendCustomMessage();
+    }
+    return message;
   }
 
 }
